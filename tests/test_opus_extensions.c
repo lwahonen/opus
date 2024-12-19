@@ -149,8 +149,24 @@ void test_extensions_generate_fail(void)
    unsigned char packet[100];
 
    /* buffer too small */
-   result = opus_packet_extensions_generate(packet, 4, ext, 4, 1);
-   expect_true(result == OPUS_BUFFER_TOO_SMALL, "expected OPUS_BUFFER_TOO_SMALL");
+   {
+      opus_int32 len;
+      /* this failure can occur at lots of points, so iterate to check as many
+          as possible */
+      for (len=0;len<23;len++)
+      {
+         size_t i;
+         for (i=len;i<sizeof(packet);i++) packet[i] = 0xFE;
+         result = opus_packet_extensions_generate(packet, len, ext, 4, 1);
+         expect_true(result == OPUS_BUFFER_TOO_SMALL,
+          "expected OPUS_BUFFER_TOO_SMALL");
+         for (i=len;i<sizeof(packet);i++)
+         {
+            expect_true(packet[i] == 0xFE,
+             "expected 0xFE padding to be undisturbed");
+         }
+      }
+   }
 
    /* invalid id */
    {
@@ -284,8 +300,10 @@ void test_extensions_parse_fail(void)
    nb_ext = 10;
    result = opus_packet_extensions_parse(packet, len, ext_out, &nb_ext);
    expect_true(result == OPUS_INVALID_PACKET, "expected OPUS_INVALID_PACKET");
+   /* note, opus_packet_extensions_count stops at the invalid frame increment
+      and tells us that we have 1 extension */
    result = opus_packet_extensions_count(packet, len);
-   expect_true(result == OPUS_INVALID_PACKET, "expected OPUS_INVALID_PACKET");
+   expect_true(result == 1, "expected opus_packet_extensions_count to return 1");
 
    /* create invalid frame increment */
    nb_ext = 10;
@@ -293,16 +311,30 @@ void test_extensions_parse_fail(void)
    packet[14] = 255;
    result = opus_packet_extensions_parse(packet, len, ext_out, &nb_ext);
    expect_true(result == OPUS_INVALID_PACKET, "expected OPUS_INVALID_PACKET");
-   /* note, opus_packet_extensions_count does not read the invalid frame increment
-      and tells us that we have 4 extensions */
+   /* note, opus_packet_extensions_count stops at the invalid frame increment
+      and tells us that we have 2 extensions */
    result = opus_packet_extensions_count(packet, len);
-   expect_true(result == 4, "expected opus_packet_extensions_count to return 4");
+   expect_true(result == 2, "expected opus_packet_extensions_count to return 2");
 
    /* not enough space */
    nb_ext = 1;
    len = opus_packet_extensions_generate(packet, sizeof(packet), ext, 4, 0);
    result = opus_packet_extensions_parse(packet, len, ext_out, &nb_ext);
    expect_true(result == OPUS_BUFFER_TOO_SMALL, "expected OPUS_BUFFER_TOO_SMALL");
+
+   /* overflow for long extension length */
+   {
+      /* about 8 MB */
+#define LENSIZE ((1U<<31)/255 + 1)
+      unsigned char *buf = malloc(LENSIZE+1);
+      len = LENSIZE+1;
+      buf[0] = 33<<1 | 1;
+      memset(buf + 1, 0xFF, LENSIZE - 1);
+      buf[LENSIZE] = 0xFE;
+      result = opus_packet_extensions_parse(buf, len, ext_out, &nb_ext);
+      expect_true(result == OPUS_INVALID_PACKET, "expected OPUS_INVALID_PACKET");
+      free(buf);
+   }
 }
 
 #define NB_RANDOM_EXTENSIONS 100000000
