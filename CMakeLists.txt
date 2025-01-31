@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /guard:cf")
+SET(CMAKE_STATIC_LINKER_FLAGS  "/guard:cf /DYNAMICBASE")
+
 include(OpusPackageVersion)
 get_package_version(PACKAGE_VERSION PROJECT_VERSION)
 
