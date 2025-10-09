@@ -151,6 +151,14 @@ AS_IF([test "$enable_float_api" = "no"],[
   AC_DEFINE([DISABLE_FLOAT_API], [1], [Do not build the float API])
 ])
 
+AC_ARG_ENABLE([fixed-res24],
+	      [AS_HELP_STRING([--disable-fixed-res24], [Use 24-bit internal resolution for fixed-point implementation])],,
+    [enable_fixed_res24=yes])
+
+AS_IF([test "$enable_fixed_res24" = "yes"],[
+  AC_DEFINE([ENABLE_RES24], [1], [24-bit internal resolution for fixed-point])
+])
+
 AC_ARG_ENABLE([custom-modes],
     [AS_HELP_STRING([--enable-custom-modes], [enable non-Opus modes, e.g. 44.1 kHz & 2^n frames])],,
     [enable_custom_modes=no])
@@ -940,7 +948,8 @@ AC_ARG_ENABLE([osce],
 )
 
 AS_IF([test "$enable_osce" = "yes" || test "$enable_osce_training_data" = "yes"], [
-       AC_DEFINE([ENABLE_OSCE], [1], [Enable Opus Speech Coding Enhancement])
+       AC_DEFINE([ENABLE_OSCE], [1], [Enable Opus Speech Coding Enhancement]),
+       AC_DEFINE([ENABLE_OSCE_BWE], [1], [Enable Opus Speech Coding Enhancement Blind BWE])
 ])
 
 AM_CONDITIONAL([ENABLE_OSCE], [test "$enable_osce" = "yes" || test "$enable_osce_training_data" = "yes"])
@@ -1032,7 +1041,7 @@ AC_CHECK_FUNCS([lrintf])
 AC_CHECK_FUNCS([lrint])
 LIBS="$saved_LIBS"
 
-AC_CHECK_FUNCS([__malloc_hook])
+AC_CHECK_FUNCS([__malloc_hook elf_aux_info])
 
 AC_SUBST([PC_BUILD])
 
@@ -1080,4 +1089,3 @@ AC_MSG_NOTICE([
  Type "make; make install" to compile and install
  Type "make check" to run the test suite
 ])
-

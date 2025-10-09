@@ -223,6 +223,11 @@ tests_test_opus_padding_LDADD = libopus.la $(NE10_LIBS) $(LIBM)
 tests_test_opus_dred_SOURCES = tests/test_opus_dred.c tests/test_opus_common.h
 tests_test_opus_dred_LDADD = libopus.la $(NE10_LIBS) $(LIBM)
 
+if CUSTOM_MODES
+tests_test_opus_custom_SOURCES = tests/test_opus_custom.c tests/test_opus_common.h
+tests_test_opus_custom_LDADD = libopus.la $(NE10_LIBS) $(LIBM)
+endif
+
 CELT_OBJ = $(CELT_SOURCES:.c=.lo)
 SILK_OBJ = $(SILK_SOURCES:.c=.lo)
 LPCNET_OBJ = $(LPCNET_SOURCES:.c=.lo)
@@ -289,14 +294,20 @@ if EXTRA_PROGRAMS
 noinst_PROGRAMS += opus_custom_demo
 opus_custom_demo_SOURCES = celt/opus_custom_demo.c
 opus_custom_demo_LDADD = libopus.la $(LIBM)
+
+TESTS += tests/test_opus_custom
+noinst_PROGRAMS += tests/test_opus_custom
 endif
 endif
 
 if EXTRA_PROGRAMS
 if ENABLE_DEEP_PLC
-noinst_PROGRAMS += fargan_demo dump_data dump_weights_blob
+noinst_PROGRAMS += fargan_demo dump_data dump_weights_blob dred_compare
 fargan_demo_SOURCES = dnn/fargan_demo.c
 fargan_demo_LDADD = $(LPCNET_OBJ) $(CELT_OBJ) $(LIBM)
+
+dred_compare_SOURCES = dnn/dred_compare.c
+dred_compare_LDADD = $(LPCNET_OBJ) $(CELT_OBJ) $(LIBM)
 
 dump_data_SOURCES = dnn/dump_data.c
 dump_data_LDADD = $(LPCNET_OBJ) $(CELT_OBJ) $(LIBM)
@@ -315,13 +326,18 @@ lossgen_demo_SOURCES = dnn/lossgen_demo.c $(LOSSGEN_SOURCES)
 lossgen_demo_LDADD = $(LIBM)
 endif
 
+if ENABLE_OSCE
+noinst_PROGRAMS += bwe_demo
+bwe_demo_SOURCES = dnn/bwe_demo.c
+bwe_demo_LDADD = $(LPCNET_OBJ) $(CELT_OBJ) $(LIBM)
+endif
+
 endif
 
 
 EXTRA_DIST = opus.pc.in \
              opus-uninstalled.pc.in \
              opus.m4 \
-             Makefile.mips \
              Makefile.unix \
              CMakeLists.txt \
              cmake/CFeatureCheck.cmake \
@@ -353,6 +369,8 @@ EXTRA_DIST = opus.pc.in \
              tests/meson.build \
              doc/meson.build \
              tests/run_vectors.sh \
+             celt/mini_kfft.c \
+             celt/arm/meson.build \
              celt/arm/arm2gnu.pl \
              celt/arm/celt_pitch_xcorr_arm.s
 

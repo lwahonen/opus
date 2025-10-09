@@ -59,8 +59,15 @@ int          p
       for (i = 0; i < p; i++) {
          /* Sum up this iteration's reflection coefficient */
          opus_val32 rr = 0;
+#if defined (FIXED_POINT) && OPUS_FAST_INT64
+         opus_int64 acc = 0;
+         for (j = 0; j < i; j++)
+            acc += (opus_int64)(lpc[j]) * (opus_int64)(ac[i - j]);
+         rr = (opus_val32)SHR(acc, 31);
+#else
          for (j = 0; j < i; j++)
             rr += MULT32_32_Q31(lpc[j],ac[i - j]);
+#endif
          rr += SHR32(ac[i + 1],6);
          r = -frac_div32(SHL32(rr,6), error);
          /*  Update LPC coefficients and total error */
@@ -277,7 +284,7 @@ void celt_iir(const opus_val32 *_x,
 int _celt_autocorr(
                    const opus_val16 *x,   /*  in: [0...n-1] samples x   */
                    opus_val32       *ac,  /* out: [0...lag-1] ac values */
-                   const opus_val16       *window,
+                   const celt_coef  *window,
                    int          overlap,
                    int          lag,
                    int          n,
@@ -302,8 +309,9 @@ int _celt_autocorr(
          xx[i] = x[i];
       for (i=0;i<overlap;i++)
       {
-         xx[i] = MULT16_16_Q15(x[i],window[i]);
-         xx[n-i-1] = MULT16_16_Q15(x[n-i-1],window[i]);
+         opus_val16 w = COEF2VAL16(window[i]);
+         xx[i] = MULT16_16_Q15(x[i],w);
+         xx[n-i-1] = MULT16_16_Q15(x[n-i-1],w);
       }
       xptr = xx;
    }

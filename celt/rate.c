@@ -189,7 +189,7 @@ void compute_pulse_cache(CELTMode *m, int LM)
                   /* Offset the number of qtheta bits by log2(N)/2
                       + QTHETA_OFFSET compared to their "fair share" of
                       total/N */
-                  offset = ((m->logN[j]+((LM0+k)<<BITRES))>>1)-QTHETA_OFFSET;
+                  offset = ((m->logN[j]+(opus_int32)((opus_uint32)(LM0+k)<<BITRES))>>1)-QTHETA_OFFSET;
                   /* The number of qtheta bits we'll allocate if the remainder
                       is to be max_bits.
                      The average measured cost for theta is 0.89701 times qb,
@@ -323,7 +323,7 @@ static OPUS_INLINE int interp_bits2pulses(const CELTMode *m, int start, int end,
          In the first case, we'd be coding a bit to signal we're going to waste
           all the other bits.
          In the second case, we'd be coding a bit to redistribute all the bits
-          we just signaled should be cocentrated in this band. */
+          we just signaled should be concentrated in this band. */
       if (j<=skip_start)
       {
          /* Give the bit we reserved to end skipping back. */
@@ -643,4 +643,3 @@ int clt_compute_allocation(const CELTMode *m, int start, int end, const int *off
    RESTORE_STACK;
    return codedBands;
 }
-
