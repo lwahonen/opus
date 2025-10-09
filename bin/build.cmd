@@ -1,9 +1,9 @@
 rm -rf buildarm
-call cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -G "Visual Studio 17 2022" -A ARM64 -S .. -B "buildarm" -DOPUS_OSCE=ON -DCMAKE_INSTALL_PREFIX="C:/libraries/opus/bin/releasearm"
+call cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -G "Visual Studio 17 2022" -A ARM64 -S .. -B "buildarm" -DOPUS_OSCE=ON -DOPUS_DISABLE_INTRINSICS=ON -DCMAKE_INSTALL_PREFIX="C:/libraries/opus/bin/releasearm"
 call cmake --build buildarm --config Release
 call cmake --install buildarm --config Release
 rm -rf buildarm
-call cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -G "Visual Studio 17 2022" -A ARM64 -S .. -B "buildarm" -DOPUS_OSCE=ON -DCMAKE_INSTALL_PREFIX="C:/libraries/opus/bin/debugarm"
+call cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -G "Visual Studio 17 2022" -A ARM64 -S .. -B "buildarm" -DOPUS_OSCE=ON -DOPUS_DISABLE_INTRINSICS=ON -DCMAKE_INSTALL_PREFIX="C:/libraries/opus/bin/debugarm"
 call cmake --build buildarm --config Debug
 call cmake --install buildarm --config Debug
 rm -rf build32
